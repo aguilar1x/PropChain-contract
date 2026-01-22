@@ -1,6 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use ink::prelude::*;
+
 use ink::primitives::AccountId;
 
 /// Trait definitions for PropChain contracts
@@ -16,6 +16,15 @@ pub trait PropertyRegistry {
 
     /// Get property information
     fn get_property(&self, property_id: u64) -> Option<PropertyInfo>;
+
+    /// Update property metadata
+    fn update_metadata(&mut self, property_id: u64, metadata: PropertyMetadata) -> Result<(), Self::Error>;
+
+    /// Approve an account to transfer a specific property
+    fn approve(&mut self, property_id: u64, to: Option<AccountId>) -> Result<(), Self::Error>;
+
+    /// Get the approved account for a property
+    fn get_approved(&self, property_id: u64) -> Option<AccountId>;
 }
 
 /// Property metadata structure
