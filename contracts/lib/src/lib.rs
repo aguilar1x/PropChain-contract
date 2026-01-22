@@ -1,8 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use ink::prelude::*;
+use ink::prelude::vec::Vec;
 use ink::storage::Mapping;
-use ink::primitives::AccountId;
 use propchain_traits::*;
 
 #[ink::contract]
@@ -16,6 +15,8 @@ mod propchain_contracts {
         PropertyNotFound,
         Unauthorized,
         InvalidMetadata,
+        NotCompliant, // Recipient is not compliant
+        ComplianceCheckFailed, // Compliance registry call failed
     }
 
     /// Property Registry contract
@@ -27,6 +28,10 @@ mod propchain_contracts {
         owner_properties: Mapping<AccountId, Vec<u64>>,
         /// Property counter
         property_count: u64,
+        /// Compliance registry contract address (optional)
+        compliance_registry: Option<AccountId>,
+        /// Contract owner (for setting compliance registry)
+        owner: AccountId,
     }
 
     #[ink(event)]
@@ -48,17 +53,82 @@ mod propchain_contracts {
         /// Creates a new PropertyRegistry contract
         #[ink(constructor)]
         pub fn new() -> Self {
+            let caller = Self::env().caller();
             Self {
                 properties: Mapping::default(),
                 owner_properties: Mapping::default(),
                 property_count: 0,
+                compliance_registry: None,
+                owner: caller,
+            }
+        }
+
+        /// Creates a new PropertyRegistry contract with compliance registry
+        #[ink(constructor)]
+        pub fn new_with_compliance(compliance_registry: AccountId) -> Self {
+            let caller = Self::env().caller();
+            Self {
+                properties: Mapping::default(),
+                owner_properties: Mapping::default(),
+                property_count: 0,
+                compliance_registry: Some(compliance_registry),
+                owner: caller,
+            }
+        }
+
+        /// Set or update the compliance registry address (owner only)
+        #[ink(message)]
+        pub fn set_compliance_registry(&mut self, compliance_registry: AccountId) -> Result<(), Error> {
+            if self.env().caller() != self.owner {
+                return Err(Error::Unauthorized);
+            }
+            self.compliance_registry = Some(compliance_registry);
+            Ok(())
+        }
+
+        /// Get the compliance registry address
+        #[ink(message)]
+        pub fn get_compliance_registry(&self) -> Option<AccountId> {
+            self.compliance_registry
+        }
+
+        /// Check if an account is compliant (internal helper)
+        fn check_compliance(&self, account: AccountId) -> Result<(), Error> {
+            if let Some(compliance_addr) = self.compliance_registry {
+                // Build cross-contract call to ComplianceRegistry::is_compliant
+                // Using is_compliant which returns bool (simpler than require_compliance)
+                let selector = ink::selector_bytes!("is_compliant");
+                
+                let is_compliant: bool = ink::env::call::build_call::<ink::env::DefaultEnvironment>()
+                    .call(compliance_addr)
+                    .exec_input(
+                        ink::env::call::ExecutionInput::new(
+                            ink::env::call::Selector::new(selector)
+                        ).push_arg(account)
+                    )
+                    .returns::<bool>()
+                    .invoke();
+
+                if is_compliant {
+                    Ok(())
+                } else {
+                    Err(Error::NotCompliant)
+                }
+            } else {
+                // No compliance registry set, allow transfer (backward compatibility)
+                Ok(())
             }
         }
 
         /// Registers a new property
+        /// Optionally checks compliance if compliance registry is set
         #[ink(message)]
         pub fn register_property(&mut self, metadata: PropertyMetadata) -> Result<u64, Error> {
             let caller = self.env().caller();
+            
+            // Check compliance for property registration (optional but recommended)
+            self.check_compliance(caller)?;
+            
             self.property_count += 1;
             let property_id = self.property_count;
 
@@ -84,6 +154,7 @@ mod propchain_contracts {
         }
 
         /// Transfers property ownership
+        /// Requires recipient to be compliant if compliance registry is set
         #[ink(message)]
         pub fn transfer_property(&mut self, property_id: u64, to: AccountId) -> Result<(), Error> {
             let caller = self.env().caller();
@@ -92,6 +163,10 @@ mod propchain_contracts {
             if property.owner != caller {
                 return Err(Error::Unauthorized);
             }
+
+            // CRITICAL: Check compliance before allowing transfer
+            // This ensures only verified, compliant users can receive properties
+            self.check_compliance(to)?;
 
             // Remove from current owner's properties
             let mut current_owner_props = self.owner_properties.get(&caller).unwrap_or_default();
