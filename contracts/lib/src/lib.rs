@@ -5,6 +5,9 @@ use ink::storage::Mapping;
 use ink::primitives::AccountId;
 use propchain_traits::*;
 
+// Re-export traits
+pub use propchain_traits::*;
+
 #[ink::contract]
 mod propchain_contracts {
     use super::*;
@@ -16,6 +19,7 @@ mod propchain_contracts {
         PropertyNotFound,
         Unauthorized,
         InvalidMetadata,
+        OracleError,
     }
 
     /// Property Registry contract
@@ -141,6 +145,7 @@ mod propchain_contracts {
         }
     }
 }
+
 
 #[cfg(test)]
 mod tests;

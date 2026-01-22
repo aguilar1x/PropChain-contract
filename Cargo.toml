@@ -2,6 +2,7 @@
 members = [
     "contracts/lib",
     "contracts/traits",
+    "contracts/oracle",
 ]
 resolver = "2"
 
