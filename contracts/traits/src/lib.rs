@@ -1,6 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use ink::prelude::*;
+#[cfg(not(feature = "std"))]
+use scale_info::prelude::string::String;
 use ink::primitives::AccountId;
 
 /// Trait definitions for PropChain contracts
