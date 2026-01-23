@@ -1,7 +1,9 @@
 [workspace]
 members = [
     "contracts/lib",
-    "contracts/traits", "security-audit",
+    "contracts/traits",
+    "contracts/proxy",
+    "security-audit",
 ]
 resolver = "2"
 
