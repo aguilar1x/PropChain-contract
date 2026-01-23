@@ -58,6 +58,9 @@ mod tests {
         let accounts = default_accounts();
         set_caller(accounts.alice);
 
+        // Set a block timestamp
+        ink::env::test::set_block_timestamp::<ink::env::DefaultEnvironment>(1000);
+
         let mut contract = PropertyRegistry::new();
         let metadata = create_sample_metadata();
 
@@ -72,7 +75,7 @@ mod tests {
         assert_eq!(property.id, property_id);
         assert_eq!(property.owner, accounts.alice);
         assert_eq!(property.metadata, metadata);
-        assert!(property.registered_at > 0);
+        assert_eq!(property.registered_at, 1000);
     }
 
     #[ink::test]
