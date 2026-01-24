@@ -500,7 +500,7 @@ mod propchain_contracts {
             // Emit single batch event instead of individual events for gas optimization
             if !updated_property_ids.is_empty() {
                 self.env().emit_event(BatchMetadataUpdated {
-                    property_ids: updated_property_ids,
+                    property_ids: updated_property_ids.clone(),
                     count: updated_property_ids.len() as u64,
                 });
             }
@@ -729,9 +729,6 @@ mod propchain_contracts {
                 total_size,
                 average_size: if property_count > 0 { total_size / property_count } else { 0 },
             }
-
-            // Track gas usage
-            self.track_gas_usage("get_portfolio_summary".as_bytes());
         }
 
         /// Portfolio Management: Gets detailed portfolio information for an owner
@@ -760,12 +757,9 @@ mod propchain_contracts {
             
             PortfolioDetails {
                 owner,
-                properties,
                 total_count: properties.len() as u64,
+                properties,
             }
-
-            // Track gas usage
-            self.track_gas_usage("get_portfolio_details".as_bytes());
         }
 
         /// Analytics: Gets aggregated statistics across all properties
@@ -797,9 +791,6 @@ mod propchain_contracts {
                 average_size: if property_count > 0 { total_size / property_count } else { 0 },
                 unique_owners: owners.len() as u64,
             }
-
-            // Track gas usage
-            self.track_gas_usage("get_global_analytics".as_bytes());
         }
 
         /// Analytics: Gets properties within a price range
@@ -821,9 +812,6 @@ mod propchain_contracts {
             }
             
             result
-
-            // Track gas usage
-            self.track_gas_usage("get_properties_by_price_range".as_bytes());
         }
 
         /// Analytics: Gets properties by size range
@@ -845,13 +833,10 @@ mod propchain_contracts {
             }
             
             result
-
-            // Track gas usage
-            self.track_gas_usage("get_properties_by_size_range".as_bytes());
         }
 
         /// Helper method to track gas usage
-        fn track_gas_usage(&mut self, operation: &[u8]) {
+        fn track_gas_usage(&mut self, _operation: &[u8]) {
             // In a real implementation, this would measure actual gas consumption
             // For demonstration purposes, we increment counters
             let gas_used = 10000; // Placeholder value
@@ -890,12 +875,17 @@ mod propchain_contracts {
             let mut recommendations = Vec::new();
             
             // Check for high gas usage operations
-            if self.gas_tracker.average_operation_gas > 50000 {
+            let avg_gas = if self.gas_tracker.operation_count > 0 {
+                self.gas_tracker.total_gas_used / self.gas_tracker.operation_count
+            } else {
+                0
+            };
+            if avg_gas > 50000 {
                 recommendations.push("Consider using batch operations for multiple properties".to_string());
             }
             
             // Check for many small operations
-            if self.gas_tracker.operation_count > 100 && self.gas_tracker.average_operation_gas < 10000 {
+            if self.gas_tracker.operation_count > 100 && avg_gas < 10000 {
                 recommendations.push("Operations are efficient but consider consolidating related operations".to_string());
             }
             
