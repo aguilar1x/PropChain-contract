@@ -1,2 +1,2 @@
-createSrcSidebar('[["propchain_contracts",["",[],["lib.rs"]]],["propchain_escrow",["",[],["lib.rs","tests.rs"]]],["propchain_proxy",["",[],["lib.rs"]]],["propchain_traits",["",[],["lib.rs"]]],["security_audit",["",[],["main.rs"]]]]');
-//{"start":19,"fragment_lengths":[42,51,39,40,39]}
+createSrcSidebar('[["oracle",["",[],["lib.rs"]]],["propchain_contracts",["",[],["lib.rs"]]],["propchain_escrow",["",[],["lib.rs","tests.rs"]]],["propchain_proxy",["",[],["lib.rs"]]],["propchain_traits",["",[],["lib.rs"]]],["security_audit",["",[],["main.rs"]]]]');
+//{"start":19,"fragment_lengths":[29,43,51,39,40,39]}

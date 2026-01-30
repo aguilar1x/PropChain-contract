@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {};
+window.SIDEBAR_ITEMS = {"enum":["ApprovalType","OracleSourceType","PropertyType","ValuationMethod"],"struct":["ComparableProperty","LocationAdjustment","MarketTrend","OracleSource","PriceAlert","PriceData","PropertyInfo","PropertyMetadata","PropertyValuation","ValuationWithConfidence","VolatilityMetrics"],"trait":["AdvancedEscrow","Escrow","PropertyRegistry"]};
