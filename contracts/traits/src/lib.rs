@@ -1,6 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use ink::prelude::*;
 use ink::primitives::AccountId;
 
 /// Trait definitions for PropChain contracts
@@ -16,6 +15,15 @@ pub trait PropertyRegistry {
 
     /// Get property information
     fn get_property(&self, property_id: u64) -> Option<PropertyInfo>;
+
+    /// Update property metadata
+    fn update_metadata(&mut self, property_id: u64, metadata: PropertyMetadata) -> Result<(), Self::Error>;
+
+    /// Approve an account to transfer a specific property
+    fn approve(&mut self, property_id: u64, to: Option<AccountId>) -> Result<(), Self::Error>;
+
+    /// Get the approved account for a property
+    fn get_approved(&self, property_id: u64) -> Option<AccountId>;
 }
 
 /// Property metadata structure
@@ -186,44 +194,75 @@ pub trait Escrow {
     fn refund_escrow(&mut self, escrow_id: u64) -> Result<(), Self::Error>;
 }
 
-/// Property Valuation Oracle trait
-pub trait PropertyValuationOracle {
-    /// Error type for oracle operations
+#[cfg(not(feature = "std"))]
+use scale_info::prelude::vec::Vec;
+
+/// Advanced escrow trait with multi-signature and document custody
+pub trait AdvancedEscrow {
+    /// Error type for escrow operations
     type Error;
 
-    /// Get property valuation from multiple sources
-    fn get_property_valuation(&self, property_id: u64) -> Result<PropertyValuation, Self::Error>;
+    /// Create an advanced escrow with multi-signature support
+    fn create_escrow_advanced(
+        &mut self,
+        property_id: u64,
+        amount: u128,
+        buyer: AccountId,
+        seller: AccountId,
+        participants: Vec<AccountId>,
+        required_signatures: u8,
+        release_time_lock: Option<u64>,
+    ) -> Result<u64, Self::Error>;
 
-    /// Get property valuation with confidence score
-    fn get_valuation_with_confidence(&self, property_id: u64) -> Result<ValuationWithConfidence, Self::Error>;
+    /// Deposit funds to escrow
+    fn deposit_funds(&mut self, escrow_id: u64) -> Result<(), Self::Error>;
 
-    /// Update property valuation manually (admin only)
-    fn update_property_valuation(&mut self, property_id: u64, valuation: PropertyValuation) -> Result<(), Self::Error>;
+    /// Release funds with multi-signature approval
+    fn release_funds(&mut self, escrow_id: u64) -> Result<(), Self::Error>;
 
-    /// Get historical valuations for a property
-    fn get_historical_valuations(&self, property_id: u64, limit: u32) -> Vec<PropertyValuation>;
+    /// Refund funds with multi-signature approval
+    fn refund_funds(&mut self, escrow_id: u64) -> Result<(), Self::Error>;
 
-    /// Get market volatility for a property type/location
-    fn get_market_volatility(&self, property_type: PropertyType, location: String) -> Result<VolatilityMetrics, Self::Error>;
+    /// Upload document hash to escrow
+    fn upload_document(
+        &mut self,
+        escrow_id: u64,
+        document_hash: ink::primitives::Hash,
+        document_type: String,
+    ) -> Result<(), Self::Error>;
 
-    /// Set alert thresholds for price changes
-    fn set_price_alert(&mut self, property_id: u64, threshold_percentage: u32, alert_address: AccountId) -> Result<(), Self::Error>;
+    /// Verify a document
+    fn verify_document(
+        &mut self,
+        escrow_id: u64,
+        document_hash: ink::primitives::Hash,
+    ) -> Result<(), Self::Error>;
 
-    /// Get comparable properties for AVM
-    fn get_comparable_properties(&self, property_id: u64, radius_km: u32) -> Vec<ComparableProperty>;
+    /// Add a condition to the escrow
+    fn add_condition(&mut self, escrow_id: u64, description: String) -> Result<u64, Self::Error>;
+
+    /// Mark a condition as met
+    fn mark_condition_met(&mut self, escrow_id: u64, condition_id: u64) -> Result<(), Self::Error>;
+
+    /// Sign approval for release or refund
+    fn sign_approval(&mut self, escrow_id: u64, approval_type: ApprovalType) -> Result<(), Self::Error>;
+
+    /// Raise a dispute
+    fn raise_dispute(&mut self, escrow_id: u64, reason: String) -> Result<(), Self::Error>;
+
+    /// Resolve a dispute (admin only)
+    fn resolve_dispute(&mut self, escrow_id: u64, resolution: String) -> Result<(), Self::Error>;
+
+    /// Emergency override (admin only)
+    fn emergency_override(&mut self, escrow_id: u64, release_to_seller: bool) -> Result<(), Self::Error>;
 }
 
-/// Price Feed trait for external price sources
-pub trait PriceFeed {
-    /// Error type for price feed operations
-    type Error;
-
-    /// Get latest price from this feed
-    fn get_latest_price(&self, asset_id: String) -> Result<PriceData, Self::Error>;
-
-    /// Get price at specific timestamp
-    fn get_price_at(&self, asset_id: String, timestamp: u64) -> Result<PriceData, Self::Error>;
-
-    /// Get price history for time range
-    fn get_price_history(&self, asset_id: String, from_timestamp: u64, to_timestamp: u64) -> Vec<PriceData>;
+/// Approval type for multi-signature operations
+#[derive(Debug, Clone, PartialEq, Eq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+pub enum ApprovalType {
+    Release,
+    Refund,
+    EmergencyOverride,
 }
+
