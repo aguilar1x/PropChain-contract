@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use ink::prelude::string::String;
 use ink::primitives::AccountId;
 
 /// Trait definitions for PropChain contracts
@@ -27,8 +28,8 @@ pub trait PropertyRegistry {
 }
 
 /// Property metadata structure
-#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode, ink::storage::traits::StorageLayout)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct PropertyMetadata {
     pub location: String,
     pub size: u64,
@@ -38,8 +39,8 @@ pub struct PropertyMetadata {
 }
 
 /// Property information structure
-#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode, ink::storage::traits::StorageLayout)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct PropertyInfo {
     pub id: u64,
     pub owner: AccountId,
@@ -48,8 +49,8 @@ pub struct PropertyInfo {
 }
 
 /// Property type enumeration
-#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode, ink::storage::traits::StorageLayout)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub enum PropertyType {
     Residential,
     Commercial,
@@ -61,8 +62,8 @@ pub enum PropertyType {
 }
 
 /// Price data from external feeds
-#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode, ink::storage::traits::StorageLayout)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct PriceData {
     pub price: u128,      // Price in USD with 8 decimals
     pub timestamp: u64,   // Timestamp when price was recorded
@@ -70,8 +71,8 @@ pub struct PriceData {
 }
 
 /// Property valuation structure
-#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode, ink::storage::traits::StorageLayout)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct PropertyValuation {
     pub property_id: u64,
     pub valuation: u128,              // Current valuation in USD with 8 decimals
@@ -82,8 +83,8 @@ pub struct PropertyValuation {
 }
 
 /// Valuation method enumeration
-#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode, ink::storage::traits::StorageLayout)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub enum ValuationMethod {
     Automated,      // AVM (Automated Valuation Model)
     Manual,         // Manual appraisal
@@ -92,8 +93,8 @@ pub enum ValuationMethod {
 }
 
 /// Valuation with confidence metrics
-#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode, ink::storage::traits::StorageLayout)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct ValuationWithConfidence {
     pub valuation: PropertyValuation,
     pub volatility_index: u32,        // Market volatility 0-100
@@ -102,8 +103,8 @@ pub struct ValuationWithConfidence {
 }
 
 /// Volatility metrics for market analysis
-#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode, ink::storage::traits::StorageLayout)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct VolatilityMetrics {
     pub property_type: PropertyType,
     pub location: String,
@@ -114,8 +115,8 @@ pub struct VolatilityMetrics {
 }
 
 /// Comparable property for AVM analysis
-#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode, ink::storage::traits::StorageLayout)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct ComparableProperty {
     pub property_id: u64,
     pub distance_km: u32,            // Distance from subject property
@@ -126,8 +127,8 @@ pub struct ComparableProperty {
 }
 
 /// Price alert configuration
-#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode, ink::storage::traits::StorageLayout)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct PriceAlert {
     pub property_id: u64,
     pub threshold_percentage: u32,   // Alert threshold (e.g., 5 for 5%)
@@ -137,8 +138,8 @@ pub struct PriceAlert {
 }
 
 /// Oracle source configuration
-#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode, ink::storage::traits::StorageLayout)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct OracleSource {
     pub id: String,                 // Unique source identifier
     pub source_type: OracleSourceType,
@@ -149,8 +150,8 @@ pub struct OracleSource {
 }
 
 /// Oracle source type enumeration
-#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode, ink::storage::traits::StorageLayout)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub enum OracleSourceType {
     Chainlink,
     Pyth,
@@ -159,8 +160,8 @@ pub enum OracleSourceType {
 }
 
 /// Location-based adjustment factors
-#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode, ink::storage::traits::StorageLayout)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct LocationAdjustment {
     pub location_code: String,      // Geographic location identifier
     pub adjustment_percentage: i32, // Adjustment factor (+/- percentage)
@@ -169,8 +170,8 @@ pub struct LocationAdjustment {
 }
 
 /// Market trend data
-#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode, ink::storage::traits::StorageLayout)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(Debug, Clone, PartialEq, scale::Encode, scale::Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
 pub struct MarketTrend {
     pub property_type: PropertyType,
     pub location: String,
@@ -265,4 +266,3 @@ pub enum ApprovalType {
     Refund,
     EmergencyOverride,
 }
-
